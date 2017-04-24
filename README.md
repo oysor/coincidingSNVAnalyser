@@ -10,10 +10,12 @@ The application displays up to six different comparisons, COSMIC & 1000Genomes, 
 
 
 /application
+
 1. Put coinciding variant tables (CSV files) in folder application/data/tables/
 https://drive.google.com/drive/folders/0B6GfJ6vekOM9QnJSRFVDVmZyODA?usp=sharing
 
 /preprocessing
+
 To quantify and build CSV files out of VCF files:
 1. Go to folder /preprocessing | cd preprocessing
 2. Download intersected VCF (12 files) 
