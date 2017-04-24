@@ -16,12 +16,12 @@ The application displays up to six different comparisons, COSMIC & 1000Genomes, 
 /preprocessing
 
 To quantify and build CSV files out of VCF files:
-1. Go to folder /preprocessing | cd preprocessing
+1. Go to folder /preprocessing | $ cd preprocessing
 2. Download intersected VCF ([12 files](https://drive.google.com/drive/folders/0B6GfJ6vekOM9SVU4TlJvbzRQYms?usp=sharing))  
 3. Download reference sequence (GRCh37, .fa format) and extract file in folder /chromFa  
 4. Make folders (cosmic_exac, cosmic_oneKG, cosmic_dbsnp, icgc_exac, icgc_oneKG, icgc_dbsnp) | $ bash setup.sh
 5. Run python script for each intersected VCF | $ python quantify.py cosmic_exac.vcf.py 
-
+6. Script output CSV files in respective folders.
 
 
 
