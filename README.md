@@ -2,11 +2,11 @@
 
 Computational analysis of coinciding single nucleotide variants (SNVs) in germline and somatic mutation spectra.
 
-https://sigven78.shinyapps.io/thesisApp/
+https://sigven78.shinyapps.io/coincidingSNVAnalyser/
 
-In short this application is a tool for analysing and comparing the mutation spectra in normal DNA variation and DNA variation related to cancer. In order to do this, the application use processed data from five international sequencing consortias: Exome Aggregation Consortium (ExAC), 1000 Genomes Project (1000Genomes), database of short genetic variants (dbSNP), the International Cancer Genomics Consortium (ICGC) and Catalogue of Somatic Mutations in Cancer (COSMIC).
+In short this application is a tool for the analysis and comparison of the mutational properties of coinciding DNA variation in the germline and the soma (i.e. cancer). The application employs processed data from five international sequencing consortias: Exome Aggregation Consortium (ExAC), 1000 Genomes Project (1000Genomes), database of short genetic variants (dbSNP), the International Cancer Genomics Consortium (ICGC) and Catalogue of Somatic Mutations in Cancer (COSMIC).
 
-The application displays up to six different comparisons, COSMIC & 1000Genomes, COSMIC & ExAC, COSMIC & dbSNP, ICGC & 1000Genomes, ICGC & ExAC and ICGC & dbSNP. Furthermore, variants of each comparison are categorized into groups, first those that only occur in germline, second, those that occur in somatic and third, those that occur in both germline and somatic (shared). These three sets of variant data are referred to as unique somatic variants, unique germline variants and coinciding variants respectively.
+The application displays six different data comparisons, COSMIC versus 1000Genomes, COSMIC versus ExAC, COSMIC versus dbSNP, ICGC versus 1000Genomes, ICGC versus ExAC and ICGC versus dbSNP. Furthermore, variants within each comparison set are categorized into groups, first those that only occur as germline, second, those that occur only as somatic and third, those that occur both as germline and somatic (i.e. shared or coinciding). These three groups of variant datasets are hereby referred to as unique somatic variants, unique germline variants and coinciding variants respectively. 
 
 
 /application
