@@ -1,4 +1,4 @@
-# coincidingSNVAnalyser
+# coincidingSNVAnalyzer
 
 Computational analysis of coinciding single nucleotide variants (SNVs) in germline and somatic mutation spectra.
 
