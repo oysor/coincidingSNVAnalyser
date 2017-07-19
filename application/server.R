@@ -1,14 +1,12 @@
 
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
+# This file loads the datatables
 source("global.R")
 
+# This is the server logic for a Shiny web application.
+# http://shiny.rstudio.com
 server <- function(input, output) {
   
+  # Renders the full name of each database that is chosen.
   output$displayTitle <- renderText({ 
     
     somatic <- switch(input$somatic,
@@ -24,6 +22,10 @@ server <- function(input, output) {
   })
   
   #### shinyjs ####
+  # shinyjs lets you perform common useful JavaScript operations in Shiny apps. 
+  # For example hiding an element, disabling an input, resetting an input back to its original value.
+  # https://github.com/daattali/shinyjs
+  ###
   observe({
     
     if(input$tabs == "variants" | input$tabs == "context" | input$tabs == "consequences"){
@@ -55,7 +57,6 @@ server <- function(input, output) {
         shinyjs::show("oneKGpopulation")
         shinyjs::reset("ExACpopulation")
         shinyjs::hide("ExACpopulation")
-        
       }else if(input$germline == "ExAC"){
         shinyjs::show("ExACpopulation")
         shinyjs::reset("oneKGpopulation")
@@ -73,12 +74,12 @@ server <- function(input, output) {
     }
   })
   
+  
   #### Database INPUT ####
-  # Updates every time a somatic or germline database is changed
-  # Updates every time a variant consequence is changed
+  # Here the three datatables (coinciding, unique germline and unique somatic) are updated every time a new database is chosen
+  ##
   databaseInput <-  reactive({
     
-    #print("1 DATABASE INPUT")
     dataset <- databases[[paste(input$somatic, input$germline, sep="_")]]
     coinciding <- dataset$coinciding
     unique_germline <- dataset$germline
@@ -98,11 +99,10 @@ server <- function(input, output) {
   })
   
   #### Coinciding INPUT ####
-  # Updates every time databaseInput() is updated
-  # Updates every time a germline setting or somatic setting is changed
+  # This function receives the coinciding datatable and perform filtering operations on it.
+  ##
   coincidingInput <- reactive({
     
-    #  print("2 COINCIDING INPUT")
     coinciding <- databaseInput()$coinciding
     
     if(input$somatic == "cosmic"){
@@ -169,8 +169,6 @@ server <- function(input, output) {
       }
     }
     
-    
-    
     if(input$somatic == "cosmic"){
       
       coinciding <- coinciding[coinciding$cancer == input$cancer,]
@@ -186,7 +184,6 @@ server <- function(input, output) {
       
     }
     
-
     # aggregate
     coinciding <- setkeyv(coinciding, c('plot','set','type'))
     coinciding <- coinciding[, sum(n, na.rm = TRUE),by = c('plot','set','type')]
@@ -195,11 +192,6 @@ server <- function(input, output) {
       variantTable <- data.table(variantTable, key="gdna_pos")
       variantTable_DL <- data.table(variantTable_DL, key="gdna_pos")
     }
-    
-    
-    # if (length(variantTable$gene) != length(variantTable_DL$gene)){
-    #   print("VARIANT TABLES HAVE DIFFERENT LENGHTS!")
-    # }
     
     coincidingDataList <- list(
       variantPlot = coinciding[coinciding$plot == "variantPlot",],
@@ -211,14 +203,13 @@ server <- function(input, output) {
     
   })
   
-  
   #### Somatic INPUT ####
-  # Updates every time a somatic setting is changed
+  # This function receives unique_somatic and coinciding datatables and perform filtering operations.
+  ##
   somaticInput <- reactive({
     
     unique_somatic <- databaseInput()$unique_somatic
     coinciding_somatic <- databaseInput()$coinciding
-    
     
     if(input$somatic == "cosmic"){
       unique_somatic <- unique_somatic[unique_somatic$cancer == input$cancer,]
@@ -237,7 +228,6 @@ server <- function(input, output) {
     coinciding_somatic <- setkeyv(coinciding_somatic, c('plot','set','type'))
     coinciding_somatic <- coinciding_somatic[, sum(n, na.rm = TRUE),by = c('plot','set','type')]
     
-    
     somaticPlotsList <- list(
       
       coinciding_somatic_variantPlot = coinciding_somatic[coinciding_somatic$plot == "variantPlot",],
@@ -252,15 +242,12 @@ server <- function(input, output) {
   })
   
   #### Germline INPUT ####
-  # Updates every time databaseInput() is updated
-  # Updates every time a germline setting is changed
+  # This function receives unique_germline and coinciding datatables and perform filtering operations.
+  ##
   germlineInput <- reactive({
     
-    # print("4 GERMLINE INPUT")
     unique_germline <- databaseInput()$unique_germline
     coinciding_germline <- databaseInput()$coinciding
-    
-
     
     if(input$germline == "oneKG" | input$germline == "ExAC"){
       if (input$germline == "oneKG"){
@@ -306,7 +293,7 @@ server <- function(input, output) {
     )
   })
   
-  ### Setting up the corrext unique proportion of unique variants according to the venn diagram.
+  ### Setting up the corrext unique proportion of unique variants (venn diagram).
   plotInput <- reactive({
     
     germline_variantPlot <- germlineInput()$variantPlot
@@ -337,7 +324,6 @@ server <- function(input, output) {
   })
   
   
-  
   ####  Variant type PLOT  #### 
   output$variantPlot <- renderPlot({
     
@@ -348,20 +334,16 @@ server <- function(input, output) {
     )
     req(sum(coinciding$V1) != 0)
     
-    
-    
     unique <- switch(input$unique, 
                      "unique_somatic"=plotInput()$somatic_variantPlot, 
                      "unique_germline"=plotInput()$germline_variantPlot
     )
-    
     
     # Ordering labels after filtering & aggregating.
     coinciding$type <- reorder.factor(coinciding$type, new.order = mutOrder$type)
     coinciding <- coinciding[order(coinciding$type), ]
     unique$type <- reorder.factor(unique$type, new.order = mutOrder$type)
     unique <- unique[order(unique$type), ]
-    
     
     theTitle <- paste(input$somatic,input$germline, sep="_")
     
@@ -389,7 +371,6 @@ server <- function(input, output) {
   #### Variant enrichment/depletion PLOT ####  
   output$variantPlot_logarithm <- renderPlot({
     
-    
     coinciding <- coincidingInput()$variantPlot
     
     validate(
@@ -397,13 +378,11 @@ server <- function(input, output) {
     )
     req(sum(coinciding$V1) != 0)
     
-    
     unique <- switch(input$unique, 
                      "unique_somatic"=plotInput()$somatic_variantPlot, 
                      "unique_germline"=plotInput()$germline_variantPlot
     )
 
-    
     # Ordering labels after filtering & aggregating.
     coinciding$type <- reorder.factor(coinciding$type, new.order = mutOrder$type)
     coinciding <- coinciding[order(coinciding$type), ]
@@ -421,7 +400,6 @@ server <- function(input, output) {
     values = prop.table(coinciding$V1)/prop.table(unique$V1)
     values <- log2(values)
 
-    # 
     unique_color <- "#E69F00"
     if(input$unique == "unique_somatic"){
       unique_color <- "#F0E442"
@@ -429,7 +407,6 @@ server <- function(input, output) {
     
     df <- data.frame(x = mutations, y = values)
     
-
     ggplot(df, aes(x=mutations, y=values)) +
       geom_bar(stat = "identity", position = "identity", colour="black",
                fill = ifelse(values > 0, "#0072B2", unique_color)) + 
@@ -1200,8 +1177,6 @@ server <- function(input, output) {
     plotData <- signature["type"]
     plotData["signature"] <- signature$V1
     plotData$b <- contextOrder$b
-    
-  
     
     ggplot(data=plotData, aes(x=type, y=plotData["signature"], fill = b, width=0.70))+
       geom_bar(stat="identity", position = "identity")+
