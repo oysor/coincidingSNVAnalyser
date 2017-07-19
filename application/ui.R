@@ -7,10 +7,10 @@ source("global.R")
 
 
 ui <- dashboardPage(
-  title = "Coinciding Germline Somatic Spectra",
+  title = "coincidingSNVAnalyzer",
   
-  dashboardHeader(title = "Computational analysis of germline and somatic mutation spectra",
-                  titleWidth = 700),
+  dashboardHeader(title = "coincidingSNVAnalyzer",
+                  titleWidth = 250),
   dashboardSidebar(disable = TRUE),
   dashboardBody(fluidRow(
     shinyjs::useShinyjs(),
@@ -75,8 +75,7 @@ ui <- dashboardPage(
           selected = "ALL"
         )
       ),
-      
-      
+
       #### Germline panel options ####
       wellPanel(
         id = "germline_panel",
@@ -163,12 +162,11 @@ ui <- dashboardPage(
           ),
           selected = "ALL"
         )
-        
       ),
       
       
       radioButtons(
-        "variantEffect",
+        "variantConsequence",
         "Variant consequence",
         list(
           "Coding" = "coding",
@@ -223,19 +221,6 @@ ui <- dashboardPage(
                           )
                         )
                  )
-                 # ,
-                 # column(
-                 #   12,
-                 #   column(4,
-                 #          plotOutput("coinciding_transition_transversion")),
-                 # 
-                 #   column(4,
-                 #          plotOutput("somatic_transition_transversion")),
-                 # 
-                 #   column(4,
-                 #          plotOutput("germline_transition_transversion"))
-                 # )
-                 
                )
       ),
       
@@ -247,7 +232,7 @@ ui <- dashboardPage(
           id = "tPanel",
           style = "overflow-y:scroll; max-height: 1000px;background:white",
           tags$h3("Coinciding variants"),
-          plotOutput("contextPlot1"),
+          plotOutput("contextPlot_coinciding"),
           
           downloadButton('downloadContext', 'Download datatable'),
           
@@ -272,7 +257,7 @@ ui <- dashboardPage(
           id = "tPanel",
           style = "overflow-y:scroll; max-height: 1000px;background:white",
           tags$h3("Coinciding variants"),
-          plotOutput("consequencePlot"),
+          plotOutput("consequencePlot_coinciding"),
           downloadButton('downloadConsequence', 'Download datatable'),
           
           tags$h3("Unique somatic variants"),
@@ -299,12 +284,12 @@ ui <- dashboardPage(
       
       tabPanel(
         h4("Mutational signatures"),
-        tags$h3("Signature plot"),
-        plotOutput("signatureContextPlot"),
+        tags$h3("deconstructSigs - Signature plot of coinciding variants"),
+         plotOutput("signatureContextPlot"),
         fluidRow(column(
           12,
           column(6,
-                 htmlOutput("signature2")),
+                 htmlOutput("signatures")),
           column(6,
                  plotOutput("signaturePie")),
           tableOutput('signatureTable')
@@ -313,11 +298,19 @@ ui <- dashboardPage(
       
       tabPanel(h4("About"),
                
+               tags$h4(HTML("Computational analysis of coinciding single nucleotide variants in germline and somatic mutation spectra<br/>")),
+               HTML("<br/>"),
+               HTML("In short this application is a tool for the analysis and comparison of the mutational properties of coinciding DNA variation in the germline and the soma (i.e. cancer). The application employs processed data from five international sequencing consortias: Exome Aggregation Consortium (ExAC), 1000 Genomes Project (1000Genomes), database of short genetic variants (dbSNP), the International Cancer Genomics Consortium (ICGC) and Catalogue of Somatic Mutations in Cancer (COSMIC)."),
+               HTML("<br/>"),
+               HTML("<br/>"),
+               HTML("The application displays six different data comparisons, COSMIC versus 1000Genomes, COSMIC versus ExAC, COSMIC versus dbSNP, ICGC versus 1000Genomes, ICGC versus ExAC and ICGC versus dbSNP. Furthermore, variants within each comparison set are categorized into groups, first those that only occur as germline, second, those that occur only as somatic and third, those that occur both as germline and somatic (i.e. shared or coinciding). These three groups of variant datasets are hereby referred to as <i>unique somatic variants</i>, <i>unique germline variants</i> and <i>coinciding variants</i> respectively."),
+               HTML("<br/>"),
+               HTML("<br/>"),
+               HTML("<br/>"),
                HTML("Developed by Øyvind Sørby. <br/>Supervised by Sigve Nakken.<br/>"),
                HTML("Built with <a href='https://shiny.rstudio.com' target='_blank'>Shiny Framework.</a>"),
                HTML("<br/> Mutational signatures identified by <a href='https://github.com/raerose01/deconstructSigs' target='_blank'>deconstructSigs.</a>"),
                HTML("<br/>Based on VCF-files preprocessed with <a href='http://www.ensembl.org/info/docs/tools/vep/index.html' target='_blank'>The Ensembl Variant Effect Predictor</a> and <a href='https://github.com/brentp/vcfanno' target='_blank'>vcfanno.</a>")
-               
       ),
       
       selectInput(
