@@ -9,10 +9,80 @@ library(Biostrings)
 library(deconstructSigs)
 library(VennDiagram)
 library(data.table)
-source("loadData.R")
+
+
+#### Load data tables ####
+
+## cosmic_oneKG
+cosmic_oneKG = list(
+  "coinciding" = fread("data/coinciding/COSMIC_oneKG_coinciding_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "germline" = fread("data/germline/COSMIC_oneKG_unique_germline_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "somatic"  = fread("data/somatic/COSMIC_oneKG_unique_somatic_genome.csv", header=T, sep=",", stringsAsFactors=F)
+)
+## COSMIC_ExAC
+cosmic_ExAC = list(
+  "coinciding" = fread("data/coinciding/COSMIC_ExAC_coinciding_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "germline" = fread("data/germline/COSMIC_ExAC_unique_germline_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "somatic" = fread("data/somatic/COSMIC_ExAC_unique_somatic_genome.csv", header=T, sep=",", stringsAsFactors=F)
+)
+## COSMIC_dbSNP
+cosmic_dbSNP = list(
+  "coinciding" = fread("data/coinciding/COSMIC_dbSNP_coinciding_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "germline" = fread("data/germline/COSMIC_dbSNP_unique_germline_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "somatic" = fread("data/somatic/COSMIC_dbSNP_unique_somatic_genome.csv", header=T, sep=",", stringsAsFactors=F)
+)
+## icgc_oneKG
+icgc_oneKG = list(
+  "coinciding"  = fread("data/coinciding/ICGC_oneKG_coinciding_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "germline"  = fread("data/germline/ICGC_oneKG_unique_germline_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "somatic" = fread("data/somatic/ICGC_oneKG_unique_somatic_genome.csv", header=T, sep=",", stringsAsFactors=F)
+)
+## icgc_ExAC
+icgc_ExAC = list(
+  "coinciding" = fread("data/coinciding/ICGC_ExAC_coinciding_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "germline" = fread("data/germline/ICGC_ExAC_unique_germline_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "somatic" = fread("data/somatic/ICGC_ExAC_unique_somatic_genome.csv", header=T, sep=",", stringsAsFactors=F)
+)
+## icgc_dbSNP
+icgc_dbSNP = list(
+  "coinciding" = fread("data/coinciding/ICGC_dbSNP_coinciding_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "germline" = fread("data/germline/ICGC_dbSNP_unique_germline_genome.csv", header=T, sep=",", stringsAsFactors=F),
+  "somatic" = fread("data/somatic/ICGC_dbSNP_unique_somatic_genome.csv", header=T, sep=",", stringsAsFactors=F)
+)
+### coinciding variant tables
+cosmic_oneKG_table <- fread("data/tables/cosmic_oneKG_coinciding_variants_updated.csv", header=T, sep=",", stringsAsFactors=F)
+cosmic_ExAC_table <- fread("data/tables/cosmic_exac_coinciding_variants_updated.csv", header=T, sep=",", stringsAsFactors=F)
+cosmic_dbSNP_table <- fread("data/tables/cosmic_dbSNP_coinciding_variants_updated.csv", header=T, sep=",", stringsAsFactors=F)
+
+#cosmic_oneKG_table_DL <- fread("data/tables/cosmic_oneKG_coinciding_variants.csv", header=T, sep=",", stringsAsFactors=F)
+#cosmic_ExAC_table_DL <- fread("data/tables/cosmic_exac_coinciding_variants.csv", header=T, sep=",", stringsAsFactors=F)
+#cosmic_dbSNP_table_DL <- fread("data/tables/cosmic_dbSNP_coinciding_variants.csv", header=T, sep=",", stringsAsFactors=F)
+
+variantTables <- list(
+  "cosmic_oneKG" = cosmic_oneKG_table,
+  "cosmic_ExAC" = cosmic_ExAC_table,
+  "cosmic_dbSNP" = cosmic_dbSNP_table,
+  "cosmic_oneKG_DL" = NULL,#cosmic_oneKG_table_DL,
+  "cosmic_ExAC_DL" = NULL,#cosmic_ExAC_table_DL,
+  "cosmic_dbSNP_DL" = NULL#cosmic_dbSNP_table_DL
+)
+
+databases = list("cosmic_ExAC"=cosmic_ExAC,
+                 "cosmic_oneKG"=cosmic_oneKG,
+                 "cosmic_dbSNP"=cosmic_dbSNP,
+                 "icgc_ExAC"=icgc_ExAC,
+                 "icgc_oneKG"=icgc_oneKG,
+                 "icgc_dbSNP"=icgc_dbSNP
+)
+
+signatureTable <- fread("data/signatures_aetiologies.tsv", header=T, sep="\t", stringsAsFactors=F)
+
+
+
+#### Global variables ####
+
 
 contextColors <- c("#56B4E9", "coral4", "red1", "grey", "olivedrab2", "pink")
-
 mutOrder <- data.frame("type" = c('A>G:T>C','C>T:G>A','C>A:G>T','C>G:G>C','A>T:T>A','A>C:T>G'), 'n' = NA)
 
 contextLabel <- c()

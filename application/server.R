@@ -75,19 +75,19 @@ server <- function(input, output) {
   
   #### Database INPUT ####
   # Updates every time a somatic or germline database is changed
-  # Updates every time a variant effect is changed
+  # Updates every time a variant consequence is changed
   databaseInput <-  reactive({
     
     #print("1 DATABASE INPUT")
-    plotData <- databases[[paste(input$somatic, input$germline, sep="_")]]
-    coinciding <- plotData$coinciding
-    unique_germline <- plotData$germline
-    unique_somatic <- plotData$somatic
+    dataset <- databases[[paste(input$somatic, input$germline, sep="_")]]
+    coinciding <- dataset$coinciding
+    unique_germline <- dataset$germline
+    unique_somatic <- dataset$somatic
     
-    if(input$variantEffect != 'ALL' ){
-      coinciding <- coinciding[coinciding$coding == input$variantEffect,]
-      unique_germline <- unique_germline[unique_germline$coding == input$variantEffect,]
-      unique_somatic  <- unique_somatic[unique_somatic$coding == input$variantEffect,]
+    if(input$variantConsequence != 'ALL' ){
+      coinciding <- coinciding[coinciding$coding == input$variantConsequence,]
+      unique_germline <- unique_germline[unique_germline$coding == input$variantConsequence,]
+      unique_somatic  <- unique_somatic[unique_somatic$coding == input$variantConsequence,]
     }
     
     dataframes <- list(
@@ -121,10 +121,10 @@ server <- function(input, output) {
       variantTable_DL = NULL
     }
     
-    if(input$variantEffect != 'ALL' ){
-      index <- with(variantTable, grepl(paste0("= ",input$variantEffect), variantTable$info, fixed = TRUE))
+    if(input$variantConsequence != 'ALL' ){
+      index <- with(variantTable, grepl(paste0("= ",input$variantConsequence), variantTable$info, fixed = TRUE))
       variantTable <- variantTable[index]
-      index_dl <- with(variantTable_DL, grepl(paste0("=",input$variantEffect), variantTable_DL$info, fixed = TRUE))
+      index_dl <- with(variantTable_DL, grepl(paste0("=",input$variantConsequence), variantTable_DL$info, fixed = TRUE))
       variantTable_DL <- variantTable_DL[index_dl]
     }
     
@@ -186,7 +186,7 @@ server <- function(input, output) {
       
     }
     
-    coincidingNotAggregated <- coinciding
+
     # aggregate
     coinciding <- setkeyv(coinciding, c('plot','set','type'))
     coinciding <- coinciding[, sum(n, na.rm = TRUE),by = c('plot','set','type')]
@@ -197,15 +197,14 @@ server <- function(input, output) {
     }
     
     
-    if (length(variantTable$gene) != length(variantTable_DL$gene)){
-      print("VARIANT TABLES HAVE DIFFERENT LENGHTS!")
-    }
+    # if (length(variantTable$gene) != length(variantTable_DL$gene)){
+    #   print("VARIANT TABLES HAVE DIFFERENT LENGHTS!")
+    # }
     
     coincidingDataList <- list(
       variantPlot = coinciding[coinciding$plot == "variantPlot",],
       consequencePlot = coinciding[coinciding$plot == "consequencePlot",],
       contextPlot = coinciding[coinciding$plot == "contextPlot",],
-      notAggregated = coincidingNotAggregated,
       variantTable = variantTable,
       variantTable_DL = variantTable_DL
     )
@@ -214,21 +213,12 @@ server <- function(input, output) {
   
   
   #### Somatic INPUT ####
-  # Updates every time databaseInput() is updated
   # Updates every time a somatic setting is changed
   somaticInput <- reactive({
     
-    #print("3 SOMATIC INPUT")
     unique_somatic <- databaseInput()$unique_somatic
     coinciding_somatic <- databaseInput()$coinciding
     
-    if(input$germline == "oneKG" | input$germline == "ExAC"){  
-      population <- switch (input$germline,
-                            "oneKG" = input$oneKGpopulation,
-                            "ExAC" = input$ExACpopulation
-      )
-      coinciding_somatic <- coinciding_somatic[coinciding_somatic$region == population,]
-    }
     
     if(input$somatic == "cosmic"){
       unique_somatic <- unique_somatic[unique_somatic$cancer == input$cancer,]
@@ -239,7 +229,7 @@ server <- function(input, output) {
         coinciding_somatic <- coinciding_somatic[coinciding_somatic$cancerFreq == input$cancerFreq,]
       }
     }
-    #print(unique$soma)
+
     # aggregate
     unique_somatic <- setkeyv(unique_somatic, c('plot','set','type'))
     unique_somatic <- unique_somatic[, sum(n, na.rm = TRUE),by = c('plot','set','type')]
@@ -270,10 +260,7 @@ server <- function(input, output) {
     unique_germline <- databaseInput()$unique_germline
     coinciding_germline <- databaseInput()$coinciding
     
-    
-    if(input$somatic == "cosmic"){
-      coinciding_germline <- coinciding_germline[coinciding_germline$cancer == input$cancer,]
-    }
+
     
     if(input$germline == "oneKG" | input$germline == "ExAC"){
       if (input$germline == "oneKG"){
@@ -387,13 +374,12 @@ server <- function(input, output) {
     plotData[7:12,"c"] <- c('coinciding')
     
     plotData$type <- factor(plotData$type, levels = mutOrder$type)
+   
     
     ggplot(plotData, aes(y=plotData$V1, x=plotData$type, fill=c)) +
       geom_bar(colour="black", position="dodge", stat="identity") +
-      labs(x = "", y = "relative requency") +
+      labs(x = "", y = "frelative requency") +
       theme_minimal() +
-      #labs(title = "Variant type plot")) +
-      #   theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(axis.text=element_text(size=12), axis.text.x = element_text(angle = 45, hjust = 1), axis.title=element_text(size=12)) +
       scale_fill_manual(values = c(coinciding="#0072B2", unique_germline="#E69F00",unique_somatic="#F0E442")) +
       theme(legend.text = element_text(size = 14, colour = "black"))+  
@@ -416,6 +402,7 @@ server <- function(input, output) {
                      "unique_somatic"=plotInput()$somatic_variantPlot, 
                      "unique_germline"=plotInput()$germline_variantPlot
     )
+
     
     # Ordering labels after filtering & aggregating.
     coinciding$type <- reorder.factor(coinciding$type, new.order = mutOrder$type)
@@ -423,12 +410,18 @@ server <- function(input, output) {
     unique$type <- reorder.factor(unique$type, new.order = mutOrder$type)
     unique <- unique[order(unique$type), ]
     
-    theTitle <- paste("Enrichment/Depletion of coinciding variants ", input$unique, sep = "")
     mutations <- coinciding$type
-    values = prop.table(coinciding$V1)/prop.table(unique$V1)
-    values <- log(values)
-    mutations <- factor(mutations, levels = mutOrder$type)
+    mutations <- factor(mutations, levels = mutOrder$type)  
     
+    test <- coinciding
+    test2 <- unique
+    test$V1 <- prop.table(test$V1)
+    test2$V1 <- prop.table(test2$V1)
+    
+    values = prop.table(coinciding$V1)/prop.table(unique$V1)
+    values <- log2(values)
+
+    # 
     unique_color <- "#E69F00"
     if(input$unique == "unique_somatic"){
       unique_color <- "#F0E442"
@@ -436,15 +429,13 @@ server <- function(input, output) {
     
     df <- data.frame(x = mutations, y = values)
     
+
     ggplot(df, aes(x=mutations, y=values)) +
       geom_bar(stat = "identity", position = "identity", colour="black",
                fill = ifelse(values > 0, "#0072B2", unique_color)) + 
       geom_text(aes(label = round(y, 2),
                     vjust = ifelse(y >= 0, 0, 1))) +
-      #ggtitle(theTitle) +
       theme_minimal() +
-      #  labs(title = theTitle) + 
-      #  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold")) +
       scale_x_discrete(name ="") +
       scale_y_continuous(paste("log2(coinciding/",input$unique, ")", sep=""))
@@ -452,7 +443,7 @@ server <- function(input, output) {
   })  
   
   #### Consequence PLOT ####  
-  output$consequencePlot <- renderPlot({
+  output$consequencePlot_coinciding <- renderPlot({
     
     tempData <- coincidingInput()$consequencePlot
     
@@ -484,12 +475,9 @@ server <- function(input, output) {
       geom_bar(stat = "identity", colour="black") +
       labs(x = "", y = "relative frequency")+
       theme_minimal() +
-      #labs(title=paste("Coinciding variants")) +
-      # theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(axis.text=element_text(size=12), axis.title=element_text(size=12)) +
       theme(legend.title=element_blank())+
       scale_y_continuous(limits = c(0,maxValue*1.05), expand = c(0, 0)) +
-      #scale_x_discrete(labels=consequence_ticks) +
       scale_x_discrete(labels=df$x) +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))+
       theme(legend.text = element_text(size = 10,
@@ -497,7 +485,6 @@ server <- function(input, output) {
                                        angle = 0,
                                        face = "bold"))+     
       theme(legend.position = "none") 
-    #theme(legend.position = "top") 
     
   })
   
@@ -532,18 +519,14 @@ server <- function(input, output) {
       geom_bar(stat = "identity", colour="black") +
       labs( x = "", y = "relative frequency")+
       theme_minimal() +
-      # labs(title="Unique germline variants")) +
-      # theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(axis.text=element_text(size=12), axis.title=element_text(size=12)) +
       scale_y_continuous(limits = c(0,maxValue*1.05), expand = c(0, 0)) +
-      # scale_x_discrete(labels=consequence_ticks) +
       scale_x_discrete(labels=df$x) +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))+
       theme(legend.text = element_text(size = 10,
                                        colour = "black",
                                        angle = 0,
                                        face = "bold"))+     
-      #  theme(legend.position = "top") 
       theme(legend.position = "none") 
     
   })
@@ -578,11 +561,8 @@ server <- function(input, output) {
       geom_bar(stat = "identity", colour="black") +
       labs(x = "", y = "relative frequency") +
       theme_minimal() +
-      #  labs(title="Unique somatic variants")) +
-      #  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(axis.text=element_text(size=12), axis.title=element_text(size=12)) +
       scale_y_continuous(limits = c(0,maxValue*1.05), expand = c(0, 0)) +
-      #scale_x_discrete(labels=consequence_ticks) +
       scale_x_discrete(labels=df$x) +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))+
       theme(legend.text = element_text(size = 10,
@@ -625,7 +605,7 @@ server <- function(input, output) {
     coinciding <- coinciding[ ! coinciding$type %in% remove$type, ]
     
     order <- factor(coinciding$type, levels = consequence_labels)
-    values = log(prop.table(coinciding$V1)/prop.table(unique$V1))
+    values = log2(prop.table(coinciding$V1)/prop.table(unique$V1))
     
     y1 = values
     values[!is.finite(values)] <- 0
@@ -638,9 +618,7 @@ server <- function(input, output) {
       geom_bar(stat = "identity", colour="black") +
       labs(x = "",y = paste("log2(coinciding/",input$unique, ")", sep=""))+
       theme_minimal() +
-      #  labs(title = "Enrichment/Depletion of coinciding variants")) +
       scale_y_continuous(limits = c(minValue,maxValue),expand = c(0, 0)) +
-      #scale_x_discrete(name = "",labels=df$x) +
       scale_x_discrete(name = "",labels=df$x) +
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(axis.text=element_text(size=12), axis.title=element_text(size=12,face="bold")) +
@@ -651,40 +629,48 @@ server <- function(input, output) {
   })
   
   #### Context PLOT ####  
-  output$contextPlot1 <- renderPlot({
+  output$contextPlot_coinciding <- renderPlot({
     
     plotData <- coincidingInput()$contextPlot
     
     validate(
-      need(sum(plotData$V1) != 0, "There are no coinciding dataset values left")
+      need(sum(plotData$V1) != 0, "There are non coinciding variants left")
     )
     req(sum(plotData$V1) != 0)
     
-    maxValue <- max(max(prop.table(coincidingInput()$contextPlot$V1)), max(prop.table(plotInput()$germline_contextPlot$V1)), max(prop.table(plotInput()$somatic_contextPlot$V1)))
+    maxValue <- max(max(prop.table(coincidingInput()$contextPlot$V1)), 
+                    max(prop.table(plotInput()$germline_contextPlot$V1)), 
+                    max(prop.table(plotInput()$somatic_contextPlot$V1)))
     
     # Ordering labels after filtering & aggregating.
     plotData$type <- reorder.factor(plotData$type, new.order = contextOrder$type)
     plotData <- plotData[order(plotData$type), ]
-    
+    # Setting new labels
     plotData$b <- contextOrder$b
     plotData$type <- contextLabel
+    # Relative frequency
     plotData$V1 <- prop.table(plotData$V1)  
     
+    # print("contextPlot")
+    # print(plotData)
+    
     ggplot(data=plotData, aes(x=type, y=V1, fill = b, width=0.70))+
-      geom_bar(stat="identity", position = "identity")+
-      labs(x = "", y = "relative frequency")+
+      geom_bar(stat="identity", 
+               position = "identity")+
+      labs(x = "", 
+           y = "relative frequency")+
       theme_minimal() +
-      # labs(title=paste("Coinciding variants")) +
-      # theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16), axis.title=element_text(size=12)) +
-      theme(legend.position = "top") +
-      theme(legend.text = element_text(size = 15, colour = "black", angle = 0, face = "bold"))+
-      theme(legend.title.align = 0) +
-      theme(legend.text.align = 0.5) +
-      theme(legend.title = element_blank(), axis.text.x  = element_text(angle=90,vjust=0.5,size=10,color="black"))+
+      theme(legend.title = element_blank(), 
+            legend.position = "top", 
+            legend.text = element_text(size = 15, colour = "black", angle = 0, face = "bold"), 
+            legend.text.align = 0.5)+
+      theme(axis.text.x  = element_text(angle=90,vjust=0.5,size=10,color="black"))+
       theme(axis.text.y = element_text(size = 12)) +
-      scale_y_continuous(limits = c(0,maxValue*1.05), expand = c(0, 0)) +
+      scale_y_continuous(limits = c(0,maxValue*1.05), 
+                         expand = c(0, 0)) +
       scale_fill_manual(values = contextColors) +
-      scale_x_discrete(limits=plotData$type,  expand = c(0, 0))+
+      scale_x_discrete(limits=plotData$type,  
+                       expand = c(0, 0))+
       guides(fill=guide_legend(nrow=1,byrow=TRUE,
                                keywidth=1.0,
                                keyheight=0.2,
@@ -716,8 +702,6 @@ server <- function(input, output) {
       geom_bar(stat="identity", position = "identity")+
       labs(x = "", y = "relative frequency")+
       theme_minimal() +
-      # labs(title=paste("Unique somatic variants")) +
-      #theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16), axis.title=element_text(size=12)) +
       theme(legend.position = "top") +
       theme(legend.text = element_text(size = 15, colour = "black", angle = 0, face = "bold"))+
       theme(legend.title.align = 0) +
@@ -758,8 +742,6 @@ server <- function(input, output) {
       geom_bar(stat="identity", position = "identity")+
       labs(x = "", y = "relative frequency")+
       theme_minimal() +
-      #labs(title=paste("Unique germline variants"))
-      # theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16), axis.title=element_text(size=12)) +
       theme(legend.position = "top") +
       theme(legend.text = element_text(size = 15, colour = "black", angle = 0, face = "bold"))+
       theme(legend.title.align = 0) +
@@ -805,7 +787,7 @@ server <- function(input, output) {
     plotData <- contextOrder
     plotData$type <- contextLabel
     
-    plotData$n <- log(res)
+    plotData$n <- log2(res)
     n1 =  plotData$n
     plotData$n[!is.finite(plotData$n)] <- 0
     
@@ -813,7 +795,6 @@ server <- function(input, output) {
       geom_bar(stat="identity", position = "identity")+
       labs( y = paste("log2(coinciding/", input$unique,") ", paste= "" ))+
       theme_minimal() +
-      #  labs(title = "Enrichment/Depletion of coinciding variants")) +
       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16)) +
       theme(legend.position = "top") +
       theme(legend.text = element_text(size = 15,
@@ -900,8 +881,8 @@ server <- function(input, output) {
   downloadFileName <- reactive({
     
     
-    if(input$variantEffect != "ALL"){
-      name <- paste0(input$variantEffect,"_")
+    if(input$variantConsequence != "ALL"){
+      name <- paste0(input$variantConsequence,"_")
     } else {
       name <- ""
     }
@@ -972,8 +953,8 @@ server <- function(input, output) {
                       "cosmic" = paste0("<a href='http://cancer.sanger.ac.uk/cosmic/about' target='_blank'>COSMIC</a>"),
                       "icgc" = paste0("<a href='http://icgc.org/#about' target='_blank'>ICGC</a>"))
     
-    if(input$variantEffect != "ALL"){
-      choices <- paste0("-Variant effect: ",input$variantEffect,"<br/>")
+    if(input$variantConsequence != "ALL"){
+      choices <- paste0("-Variant consequence: ",input$variantConsequence,"<br/>")
     } else {
       choices <- ""
     }
@@ -1027,8 +1008,8 @@ server <- function(input, output) {
                        "dbSNP"=paste0("<a href='https://www.ncbi.nlm.nih.gov/snp' target='_blank'>dbSNP</a>"),
                        "ExAC"=paste0("<a href='http://exac.broadinstitute.org/about' target='_blank'>ExAC</a>"))
     
-    if(input$variantEffect != "ALL"){
-      choices <- paste0("-Variant effect: ",input$variantEffect,"<br/>")
+    if(input$variantConsequence != "ALL"){
+      choices <- paste0("-variant consequence: ",input$variantConsequence,"<br/>")
     } else {
       choices <- ""
     }
@@ -1141,13 +1122,15 @@ server <- function(input, output) {
     
     df <- plotData[,c("type","V1")]
     
-    m <- matrix(df$V1,nrow=1)
-    m <- data.frame(m)
-    colnames(m) <- df$type 
-    m <- m[1,]
+    contextPlotWeights <- matrix(df$V1,nrow=1)
+    contextPlotWeights <- data.frame(contextPlotWeights)
+    colnames(contextPlotWeights) <- df$type 
+    contextPlotWeights <- contextPlotWeights[1,]
     
-    res <- whichSignatures(tumor.ref = m, 
-                           #signatures.ref = signatures.nature2013,
+    # print("mutationPlot")
+    # print(contextPlotWeights)
+    
+    res <- whichSignatures(tumor.ref = contextPlotWeights, 
                            signatures.ref = signatures.cosmic,
                            sample.id = 1,
                            contexts.needed = TRUE,
@@ -1163,6 +1146,8 @@ server <- function(input, output) {
     
     res <- deConstructSigs()$results
     req(!is.null(res))
+    
+
     
     signatures <- paste0(colnames(res$weights[1]), " : ", paste0(round(res$weights[1]*100, 3), "%"))
     if(length(res$weights) > 1){
@@ -1185,7 +1170,7 @@ server <- function(input, output) {
     makePie(res)
   })
   
-  output$signature2<- renderUI({
+  output$signatures<- renderUI({
     res <- deConstructSigs()$results
     req(!is.null(res))
     signatures <- paste0(colnames(res$weights[1]), " : ", paste0(round(res$weights[1]*100, 2), "%"))
@@ -1216,12 +1201,12 @@ server <- function(input, output) {
     plotData["signature"] <- signature$V1
     plotData$b <- contextOrder$b
     
+  
+    
     ggplot(data=plotData, aes(x=type, y=plotData["signature"], fill = b, width=0.70))+
       geom_bar(stat="identity", position = "identity")+
       labs(x = "", y = "relative frequency")+
       theme_minimal() +
-      # labs(title=paste("Coinciding variants")) +
-      # theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16), axis.title=element_text(size=12)) +
       theme(legend.position = "top") +
       theme(legend.text = element_text(size = 15, colour = "black", angle = 0, face = "bold"))+
       theme(legend.title.align = 0) +
@@ -1245,7 +1230,6 @@ server <- function(input, output) {
     outText <- c("")
     coincidingValues <-coincidingInput()$contextPlot$V1
     req(sum(coincidingValues) != 0)
-    #   print(coincidingValues)
     if (0 %in% coincidingValues){
       
       outText <- paste0(outText, "Warning: coinciding dataset contains missing values</br>")
