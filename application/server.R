@@ -124,8 +124,9 @@ server <- function(input, output) {
     if(input$variantConsequence != 'ALL' ){
       index <- with(variantTable, grepl(paste0("= ",input$variantConsequence), variantTable$info, fixed = TRUE))
       variantTable <- variantTable[index]
-      index_dl <- with(variantTable_DL, grepl(paste0("=",input$variantConsequence), variantTable_DL$info, fixed = TRUE))
-      variantTable_DL <- variantTable_DL[index_dl]
+      #index_dl <- with(variantTable_DL, grepl(paste0("=",input$variantConsequence), variantTable_DL$info, fixed = TRUE))
+      #variantTable_DL <- variantTable_DL[index_dl]
+      variantTable_DL <- variantTable_DL[index]
     }
     
     if(input$germline == "oneKG" | input$germline == "ExAC"){
@@ -146,6 +147,8 @@ server <- function(input, output) {
       index <- with(variantTable, grepl(population , variantTable$info))
       variantTable <- variantTable[index]
       variantTable_DL <- variantTable_DL[index]
+      
+      
       # dbSNP  
     } else {
       
@@ -311,6 +314,9 @@ server <- function(input, output) {
     somatic_consequencePlot$V1 <- (somaticInput()$consequencePlot$V1 + somaticInput()$coinciding_somatic_consequencePlot$V1) - coincidingInput()$consequencePlot$V1
     
     #### plotInput ####
+    # Each dataset have the right proportion after filtering.
+    # These datasets are used as input for plots.
+    ##
     plotInputList <- list(
       
       germline_variantPlot = germline_variantPlot,
@@ -848,6 +854,8 @@ server <- function(input, output) {
     dl2 <- coincidingInput()$consequencePlot
     dl2 <- dl2[,c("type","V1")]
     
+    print(coincidingInput()$variantTable_DL)
+    
     list("variantDatatable" = coincidingInput()$variantTable_DL,
          "contextTable" = dl,
          "consequenceTable" = dl2
@@ -856,7 +864,6 @@ server <- function(input, output) {
   
   
   downloadFileName <- reactive({
-    
     
     if(input$variantConsequence != "ALL"){
       name <- paste0(input$variantConsequence,"_")
