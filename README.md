@@ -11,7 +11,7 @@ The application displays six different data comparisons, COSMIC versus 1000Genom
 
 /application
 
-1. To run the application from RStudio you only have to put the coinciding variant tables ([CSV files](https://drive.google.com/drive/folders/0B6GfJ6vekOM9QnJSRFVDVmZyODA?usp=sharing)) in folder application/data/tables/
+1. To run the application from RStudio you have to put the coinciding variant tables ([CSV files](https://drive.google.com/drive/folders/0B6GfJ6vekOM9QnJSRFVDVmZyODA?usp=sharing)) in folder application/data/tables/
 
 /preprocessing
 
